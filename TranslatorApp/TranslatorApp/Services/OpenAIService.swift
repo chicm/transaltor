@@ -92,8 +92,8 @@ final class OpenAIService {
         }
 
         guard (200..<300).contains(http.statusCode) else {
-            let message = (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?
-                ["error"] as? [String: Any]
+            let payload = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+            let message = payload?["error"] as? [String: Any]
             let description = (message?["message"] as? String) ?? "OpenAI request failed with status code \(http.statusCode)."
             throw OpenAIServiceError.serverError(description)
         }

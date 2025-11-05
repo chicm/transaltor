@@ -44,7 +44,7 @@ BBA9321D2B6DC8B700C0B25F /* TranslatorApp */ = {isa = PBXGroup; children = (
 BBA9321E2B6DC8B700C0B25F /* TranslatorAppApp.swift */,
 BBA9321F2B6DC8B700C0B25F /* ContentView.swift */,
 BBA932252B6DC8B700C0B25F /* ViewModel */,
-BBA932272B6DC8B700C0B25F /* Services */,
+BBA932362B6DC8B700C0B25F /* Services */,
 BBA9322C2B6DC8B700C0B25F /* Utilities */,
 BBA932242B6DC8B700C0B25F /* Assets.xcassets */,
 BBA932232B6DC8B700C0B25F /* Info.plist */,
@@ -53,7 +53,7 @@ BBA9322E2B6DC8B700C0B25F /* Preview Content */,
 BBA932252B6DC8B700C0B25F /* ViewModel */ = {isa = PBXGroup; children = (
 BBA932202B6DC8B700C0B25F /* TranslationViewModel.swift */,
 ); path = ViewModel; sourceTree = "<group>"; };
-BBA932272B6DC8B700C0B25F /* Services */ = {isa = PBXGroup; children = (
+BBA932362B6DC8B700C0B25F /* Services */ = {isa = PBXGroup; children = (
 BBA932212B6DC8B700C0B25F /* OpenAIService.swift */,
 ); path = Services; sourceTree = "<group>"; };
 BBA9322C2B6DC8B700C0B25F /* Utilities */ = {isa = PBXGroup; children = (
@@ -68,7 +68,7 @@ BBA932262B6DC8B700C0B25F /* Preview Assets.xcassets */,
 BBA9321A2B6DC8B700C0B25F /* TranslatorApp */ = {isa = PBXNativeTarget; buildConfigurationList = BBA932322B6DC8B700C0B25F /* Build configuration list for PBXNativeTarget "TranslatorApp" */; buildPhases = (
 BBA932182B6DC8B700C0B25F /* Sources */,
 BBA932192B6DC8B700C0B25F /* Frameworks */,
-BBA9321A2B6DC8B700C0B25F /* Resources */,
+BBA932352B6DC8B700C0B25F /* Resources */,
 ); buildRules = ( ); dependencies = ( ); name = TranslatorApp; productName = TranslatorApp; productReference = BBA9321C2B6DC8B700C0B25F /* TranslatorApp.app */; productType = "com.apple.product-type.application"; };
 /* End PBXNativeTarget section */
 
@@ -102,7 +102,7 @@ BBA9321A2B6DC8B700C0B25F /* TranslatorApp */,
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-BBA9321A2B6DC8B700C0B25F /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (
+BBA932352B6DC8B700C0B25F /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (
 BBA9322D2B6DC8B700C0B25F /* Assets.xcassets in Resources */,
 BBA9322F2B6DC8B700C0B25F /* Preview Assets.xcassets in Resources */,
 ); runOnlyForDeploymentPostprocessing = 0; };

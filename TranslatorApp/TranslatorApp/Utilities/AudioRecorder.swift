@@ -59,15 +59,21 @@ final class AudioRecorder: NSObject, AVAudioRecorderDelegate {
         recorder = nil
     }
 
-    func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
-        let url = flag ? currentURL : nil
-        onFinishRecording?(url)
-        cleanup()
+    nonisolated func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            let url = flag ? self.currentURL : nil
+            self.onFinishRecording?(url)
+            self.cleanup()
+        }
     }
 
-    func audioRecorderEncodeErrorDidOccur(_ recorder: AVAudioRecorder, error: Error?) {
-        onFinishRecording?(nil)
-        cleanup()
+    nonisolated func audioRecorderEncodeErrorDidOccur(_ recorder: AVAudioRecorder, error: Error?) {
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            self.onFinishRecording?(nil)
+            self.cleanup()
+        }
     }
 
     private func cleanup() {

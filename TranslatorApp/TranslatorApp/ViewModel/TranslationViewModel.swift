@@ -13,9 +13,9 @@ final class TranslationViewModel: ObservableObject {
     private let openAIService: OpenAIService
     private let audioRecorder: AudioRecorder
 
-    init(openAIService: OpenAIService = OpenAIService(), audioRecorder: AudioRecorder = AudioRecorder()) {
-        self.openAIService = openAIService
-        self.audioRecorder = audioRecorder
+    init(openAIService: OpenAIService? = nil, audioRecorder: AudioRecorder? = nil) {
+        self.openAIService = openAIService ?? OpenAIService()
+        self.audioRecorder = audioRecorder ?? AudioRecorder()
 
         self.audioRecorder.onFinishRecording = { [weak self] url in
             Task { await self?.handleRecordingFinished(url: url) }
