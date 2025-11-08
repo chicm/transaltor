@@ -1,3 +1,4 @@
 build/
 .DS_Store
 TranslatorApp/TranslatorApp.xcodeproj/xcuserdata/
+*.xcuserstate
