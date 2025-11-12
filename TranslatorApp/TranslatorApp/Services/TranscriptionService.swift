@@ -17,7 +17,7 @@ enum TranscriptionServiceError: LocalizedError {
     }
 }
 
-final class TranscriptionService {
+final class TranscriptionService: @unchecked Sendable {
     private let session: URLSession
     private let jsonDecoder: JSONDecoder
     private let baseURL = URL(string: "https://api.openai.com/v1")!

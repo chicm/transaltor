@@ -99,31 +99,18 @@ struct VoiceControlButton: View {
     let action: () -> Void
 
     @State private var animatePulse = false
+    private let pulseAnimation = Animation.easeInOut(duration: 1.2).repeatForever(autoreverses: true)
 
     private var isActive: Bool {
         state != .idle
     }
 
     private var title: String {
-        switch state {
-        case .idle:
-            return "Start Listening"
-        case .listening:
-            return "Listening..."
-        case .processing:
-            return "Processing..."
-        }
+        state == .idle ? "Start Listening" : "Listening..."
     }
 
     private var iconName: String {
-        switch state {
-        case .idle:
-            return "waveform.circle.fill"
-        case .listening:
-            return "waveform"
-        case .processing:
-            return "ellipsis"
-        }
+        state == .idle ? "waveform.circle.fill" : "waveform"
     }
 
     var body: some View {
@@ -135,10 +122,9 @@ struct VoiceControlButton: View {
                         .frame(width: 220, height: 220)
                         .scaleEffect(animatePulse ? 1.2 : 0.9)
                         .opacity(animatePulse ? 0.2 : 0.5)
-                        .animation(
-                            .easeInOut(duration: 1.2).repeatForever(autoreverses: true),
-                            value: animatePulse
-                        )
+                        .animation(pulseAnimation, value: animatePulse)
+                        .onAppear { startPulse() }
+                        .onDisappear { stopPulse() }
                 }
 
                 Circle()
@@ -164,12 +150,21 @@ struct VoiceControlButton: View {
             }
         }
         .buttonStyle(.plain)
-        .onAppear { updatePulse() }
-        .onChange(of: state) { _ in updatePulse() }
     }
 
-    private func updatePulse() {
-        animatePulse = isActive
+    private func startPulse() {
+        animatePulse = false
+        DispatchQueue.main.async {
+            withAnimation(pulseAnimation) {
+                animatePulse = true
+            }
+        }
+    }
+
+    private func stopPulse() {
+        withAnimation(.easeOut(duration: 0.2)) {
+            animatePulse = false
+        }
     }
 }
 

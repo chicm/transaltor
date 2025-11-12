@@ -24,6 +24,7 @@ final class AudioRecorder: NSObject {
     private var audioFile: AVAudioFile?
     private var currentURL: URL?
     private var tapInstalled = false
+    private var shouldLoop = false
 
     private var recordingStartTime: CFTimeInterval = 0
     private var lastSpeechTime: CFTimeInterval?
@@ -31,20 +32,24 @@ final class AudioRecorder: NSObject {
     private var baselineMaxPower: Float = -160
     private var dynamicActivationThreshold: Float?
     private var speechDetected = false
+    private let minimumSpeechDuration: TimeInterval = 0.2
 
     private let baselineDuration: TimeInterval = 1.0
     private let trailingSilenceDuration: TimeInterval = 1.5
     private let maxInitialSilence: TimeInterval = 30.0
-    private let activationMargin: Float = 10
-    private let minimumActivation: Float = -45
+    private let activationMargin: Float = 15
+    private let minimumActivation: Float = -40
+    private let maxBaselineLevel: Float = -30
 
     func startRecording(language: String) async throws {
         try await ensureMicrophonePermission()
         try configureSession()
-        try beginCapture()
+        shouldLoop = true
+        try await beginCapture()
     }
 
     func stopRecording() {
+        shouldLoop = false
         finishRecording(success: false)
     }
 
@@ -71,7 +76,7 @@ final class AudioRecorder: NSObject {
         try session.setActive(true, options: .notifyOthersOnDeactivation)
     }
 
-    private func beginCapture() throws {
+    private func beginCapture() async throws {
         resetEngineState()
 
         let inputNode = audioEngine.inputNode
@@ -122,24 +127,30 @@ final class AudioRecorder: NSObject {
         let avgPower = 20 * log10(max(rms, epsilon))
         let now = CACurrentMediaTime()
 
-        if now < baselineEndTime {
-            baselineMaxPower = max(baselineMaxPower, avgPower)
-            return
-        }
-
         if dynamicActivationThreshold == nil {
-            dynamicActivationThreshold = max(baselineMaxPower + activationMargin, minimumActivation)
-            logDebug("Calibrated activation threshold to \(Int(dynamicActivationThreshold ?? minimumActivation)) dB (baseline \(Int(baselineMaxPower)) dB).")
+            baselineMaxPower = max(baselineMaxPower, avgPower)
+            if now >= baselineEndTime || avgPower > minimumActivation + 5 {
+                let baselineLevel = min(baselineMaxPower, maxBaselineLevel)
+                dynamicActivationThreshold = max(baselineLevel + activationMargin, minimumActivation)
+                logDebug("Calibrated activation threshold to \(Int(dynamicActivationThreshold ?? minimumActivation)) dB (baseline \(Int(baselineLevel)) dB).")
+            } else {
+                return
+            }
         }
 
         guard let activationThreshold = dynamicActivationThreshold else { return }
 
         if avgPower > activationThreshold {
-            if !speechDetected {
-                speechDetected = true
-                logDebug("Speech detected (level \(Int(avgPower)) dB).")
+            if speechDetected {
+                lastSpeechTime = now
+            } else if let lastSpeechTime = lastSpeechTime {
+                if now - lastSpeechTime >= minimumSpeechDuration {
+                    speechDetected = true
+                    logDebug("Speech detected (level \(Int(avgPower)) dB).")
+                }
+            } else {
+                self.lastSpeechTime = now
             }
-            lastSpeechTime = now
         } else if speechDetected {
             if let lastSpeechTime, now - lastSpeechTime >= trailingSilenceDuration {
                 logDebug("Detected \(trailingSilenceDuration)s of trailing silence. Stopping recording.")
@@ -167,6 +178,18 @@ final class AudioRecorder: NSObject {
         }
 
         onFinishRecording?(success ? recordedURL : nil)
+
+        if shouldLoop {
+            Task { [weak self] in
+                guard let self else { return }
+                do {
+                    try await self.beginCapture()
+                } catch {
+                    self.logDebug("Failed to restart capture: \(error.localizedDescription)")
+                    self.onFinishRecording?(nil)
+                }
+            }
+        }
     }
 
     private func resetEngineState() {
